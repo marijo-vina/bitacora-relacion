@@ -1,0 +1,267 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos base personalizados */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    min-height: 100vh;
+    background: url('/road-sunset.png') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    background: transparent;
+  }
+  
+  /* Capa de color para suavizar la imagen y que no canse la vista */
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(14, 165, 233, 0.15), rgba(249, 115, 22, 0.2));
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Asegurar que el contenido esté por encima del overlay */
+  app-root {
+    display: block;
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    background: transparent;
+  }
+  
+  /* Hacer transparente el contenedor de rutas */
+  router-outlet ~ * {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+/* Componentes personalizados */
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-romantic-500 to-romantic-600 text-white font-medium rounded-full 
+           shadow-lg shadow-romantic-500/30 hover:shadow-xl hover:shadow-romantic-500/40 
+           transform hover:-translate-y-0.5 transition-all duration-300 
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 10px 25px -5px rgba(236, 72, 153, 0.3);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 10px 25px -5px rgba(236, 72, 153, 0.3);
+    }
+    to {
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), 0 10px 30px -5px rgba(236, 72, 153, 0.5);
+    }
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-white/80 backdrop-blur-md text-romantic-600 font-medium rounded-full 
+           border-2 border-romantic-200/50 hover:border-romantic-300 
+           shadow-md hover:shadow-lg transition-all duration-300 
+           active:scale-95;
+  }
+  
+  .card-romantic {
+    @apply bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl shadow-black/10
+           border-2 border-white/30 overflow-hidden;
+    backdrop-filter: blur(12px);
+  }
+  
+  .input-romantic {
+    @apply w-full px-4 py-3 bg-white/60 backdrop-blur-md border-2 border-romantic-200/50 rounded-xl 
+           focus:border-romantic-400 focus:ring-4 focus:ring-romantic-100/50
+           focus:outline-none transition-all duration-300 
+           placeholder:text-gray-400;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-romantic-600 via-road-500 to-sunset-500 
+           bg-clip-text text-transparent;
+  }
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/75 backdrop-blur-2xl border-2 border-white/40 shadow-2xl shadow-black/10;
+    backdrop-filter: blur(16px);
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Corazones flotantes */
+.floating-hearts {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.heart {
+  position: absolute;
+  bottom: -50px;
+  opacity: 0;
+  font-size: 24px;
+  animation: floatUp 8s ease-in-out infinite;
+}
+
+.heart:nth-child(1) {
+  left: 5%;
+  animation-delay: 0s;
+  animation-duration: 10s;
+}
+
+.heart:nth-child(2) {
+  left: 15%;
+  animation-delay: 2s;
+  animation-duration: 12s;
+  font-size: 18px;
+}
+
+.heart:nth-child(3) {
+  left: 85%;
+  animation-delay: 4s;
+  animation-duration: 9s;
+}
+
+.heart:nth-child(4) {
+  left: 95%;
+  animation-delay: 1s;
+  animation-duration: 11s;
+  font-size: 20px;
+}
+
+.heart:nth-child(5) {
+  left: 50%;
+  animation-delay: 6s;
+  animation-duration: 13s;
+  font-size: 16px;
+}
+
+@keyframes floatUp {
+  0% {
+    bottom: -50px;
+    opacity: 0;
+    transform: translateX(0) rotate(0deg);
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    bottom: 100vh;
+    opacity: 0;
+    transform: translateX(50px) rotate(360deg);
+  }
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60 shadow-lg shadow-romantic-200/20;
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(236, 72, 153, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #ec4899, #db2777);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #db2777, #be185d);
+}
+
+/* Animaciones de entrada */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Estilos para Leaflet */
+.leaflet-container {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Estilos para el reproductor de audio */
+.audio-player {
+  @apply fixed bottom-4 right-4 z-50;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container-mobile {
+    @apply px-4;
+  }
+}
