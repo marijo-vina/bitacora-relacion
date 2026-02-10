@@ -6,29 +6,12 @@ use App\Http\Controllers\Api\EntryController;
 use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Api\MediaController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes - Nuestro Diario de Ruta
 |--------------------------------------------------------------------------
 */
-
-// Health check endpoint (temporary for debugging)
-Route::get('/debug/tables', function () {
-    try {
-        $tables = DB::select('SHOW TABLES');
-        return response()->json([
-            'database' => config('database.connections.mysql.database'),
-            'tables' => $tables,
-            'count' => count($tables)
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});
 
 // Public routes (login only)
 Route::post('/login', [AuthController::class, 'login']);
