@@ -1,9 +1,9 @@
 # 🚀 Guía de Despliegue a Producción
-## Vercel + Render + Aiven
+## Vercel + Railway + Aiven
 
 ### Stack de Despliegue
 - **Frontend:** Vercel (Angular)
-- **Backend:** Render (Laravel)
+- **Backend:** Railway (Laravel)
 - **Base de datos:** Aiven (MySQL)
 
 ---
@@ -63,113 +63,95 @@ Aiven viene con `defaultdb`, pero puedes crear una personalizada:
 
 ---
 
-## 🔧 Fase 2: Backend en Render
+## 🔧 Fase 2: Backend en Railway
 
 ### Paso 1: Preparar repositorio
-Antes de desplegar, necesitamos preparar algunos archivos:
-
-1. **Verificar que `.env` no está en Git:**
+1. **Verificar que `.env` no está en Git** (debe estar en .gitignore)
+2. **Subir código a GitHub** (si no lo has hecho):
    ```bash
-   # Debe estar en .gitignore
-   git status
+   cd c:\bitacora-relacion
+   git init
+   git add .
+   git commit -m "Preparado para produccion"
+   git branch -M main
+   git remote add origin https://github.com/TU_USUARIO/bitacora-relacion.git
+   git push -u origin main
    ```
 
-2. **Crear archivo de configuración para Render:**
-   - Crear `render.yaml` en la raíz del proyecto (lo crearemos después)
+### Paso 2: Crear cuenta en Railway
+1. Ve a https://railway.app
+2. Haz clic en **"Start a New Project"**
+3. Regístrate con GitHub (recomendado)
 
-### Paso 2: Subir código a GitHub
-Si aún no lo has hecho:
+### Paso 3: Crear proyecto desde GitHub
+1. En el dashboard, haz clic en **"New Project"**
+2. Selecciona **"Deploy from GitHub repo"**
+3. Conecta tu repositorio: `tu-usuario/bitacora-relacion`
+4. Railway detectará automáticamente el proyecto
 
-```bash
-cd c:\bitacora-relacion
-git init
-git add .
-git commit -m "Initial commit for production deployment"
-git branch -M main
-git remote add origin https://github.com/TU_USUARIO/bitacora-relacion.git
-git push -u origin main
-```
+### Paso 4: Configurar el servicio
+1. Una vez creado, haz clic en el servicio
+2. Ve a **"Settings"**
+3. En **"Root Directory"**, agrega:
+   ```
+   bitacora-relacion-backend
+   ```
+4. En **"Public Networking"**, haz clic en **"Generate Domain"**
+   - Esto te dará una URL como: `https://bitacora-relacion-backend-production.up.railway.app`
 
-### Paso 3: Crear cuenta en Render
-1. Ve a https://render.com
-2. Haz clic en **"Get Started"**
-3. Regístrate con GitHub (más fácil para conectar repos)
+### Paso 5: Configurar Variables de Entorno
+1. Ve a la pestaña **"Variables"**
+2. Haz clic en **"Raw Editor"** (arriba a la derecha)
+3. Pega todas las variables:
 
-### Paso 4: Crear Web Service para Backend
-1. En el dashboard de Render, haz clic en **"New +"** → **"Web Service"**
-2. Conecta tu repositorio de GitHub
-3. Configura:
-   - **Name:** `bitacora-relacion-backend`
-   - **Region:** Elige uno cercano
-   - **Branch:** `main`
-   - **Root Directory:** `bitacora-relacion-backend`
-   - **Runtime:** `PHP`
-   - **Build Command:**
-     ```bash
-     composer install --optimize-autoloader --no-dev && php artisan config:cache && php artisan route:cache && php artisan view:cache
-     ```
-   - **Start Command:**
-     ```bash
-     php artisan serve --host=0.0.0.0 --port=$PORT
-     ```
-   - **Plan:** Free
-
-### Paso 5: Configurar Variables de Entorno en Render
-En la sección **"Environment Variables"**, agrega:
-
-```bash
-APP_NAME="Nuestro Diario de Ruta"
+```env
+APP_NAME=Nuestro Diario de Ruta
 APP_ENV=production
-APP_KEY=base64:GENERA_ESTO_LOCALMENTE_CON_php_artisan_key:generate
+APP_KEY=base64:TU_APP_KEY_GENERADA
 APP_DEBUG=false
-APP_URL=https://bitacora-relacion-backend.onrender.com
-
-# Configuración de Aiven MySQL
+APP_URL=${{RAILWAY_PUBLIC_DOMAIN}}
 DB_CONNECTION=mysql
-DB_HOST=[tu-host-de-aiven].aivencloud.com
-DB_PORT=xxxxx
-DB_DATABASE=bitacora_relacion
+DB_HOST=tu-host.aivencloud.com
+DB_PORT=tu-puerto
+DB_DATABASE=defaultdb
 DB_USERNAME=avnadmin
-DB_PASSWORD=[tu-password-de-aiven]
-MYSQL_ATTR_SSL_CA=/etc/ssl/certs/ca-certificates.crt
-
-# Sesiones y caché
+DB_PASSWORD=tu-password
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
-
-# Sanctum
-SANCTUM_STATEFUL_DOMAINS=tu-frontend.vercel.app
-
-# CORS
+SANCTUM_STATEFUL_DOMAINS=${{RAILWAY_PUBLIC_DOMAIN}}
 FRONTEND_URL=https://tu-frontend.vercel.app
-
-# Usuarios permitidos
 PARTNER1_EMAIL=mvinajera@gmail.com
 PARTNER2_EMAIL=514dave.core@gmail.com
-
-# Cloudinary (si lo usas)
+LOG_CHANNEL=stderr
+LOG_LEVEL=error
 CLOUDINARY_CLOUD_NAME=tu_cloud_name
 CLOUDINARY_API_KEY=tu_api_key
 CLOUDINARY_API_SECRET=tu_api_secret
 ```
 
-### Paso 6: Ejecutar migraciones
-Después del primer deploy:
+**Nota:** Railway usa `${{RAILWAY_PUBLIC_DOMAIN}}` para auto-completar tu dominio.
 
-1. Ve a **"Shell"** en el dashboard de Render
-2. Ejecuta:
+### Paso 6: Ejecutar migraciones
+Una vez desplegado exitosamente:
+
+1. Ve a tu servicio en Railway
+2. Haz clic en los tres puntos (**...**) → **"Create Terminal"**
+3. Ejecuta:
    ```bash
    php artisan migrate --force
    php artisan storage:link
    ```
 
-### ✅ Checklist Render Backend Completado
-- [ ] Código subido a GitHub
-- [ ] Web Service creado en Render
-- [ ] Variables de entorno configuradas
+### ✅ Checklist Railway Backend Completado
+- [x] Código subido a GitHub
+- [x] Proyecto creado en Railway desde GitHub
+- [x] Root Directory configurado
+- [x] Dominio público generado
+- [x] Variables de entorno configuradas
+- [x] Deploy exitoso
 - [ ] Migraciones ejecutadas
-- [ ] Backend accesible en https://xxx.onrender.com
+- [ ] Backend accesible en https://xxx.up.railway.app
 
 ---
 
@@ -199,9 +181,11 @@ Verifica que no haya errores.
 3. Regístrate con GitHub
 
 ### Paso 4: Desplegar proyecto
-1. En el dashboard, haz clic en **"Add New..."** → **"Project"**
-2. Importa tu repositorio de GitHub
-3. Configura:
+1. En el dashboard, haz clic en **"Add New..-production.up.railway.app/api'
+};
+```
+
+**IMPORTANTE:** Reemplaza la URL con tu dominio real de Railway.Configura:
    - **Framework Preset:** Angular
    - **Root Directory:** `nuestro-diario-ruta-frontend`
    - **Build Command:** `ng build --configuration production`
@@ -234,10 +218,10 @@ Crear archivo `vercel.json` en `nuestro-diario-ruta-frontend/`:
 ```
 
 ### Paso 6: Actualizar URL del backend
-Una vez desplegado, toma la URL de Vercel (ej: `https://tu-proyecto.vercel.app`) y:
-
-1. Actualiza en Render las variables:
+Una vez desplegadailway las variables:
    - `FRONTEND_URL=https://tu-proyecto.vercel.app`
+   - `SANCTUM_STATEFUL_DOMAINS=tu-proyecto.vercel.app`
+2. Railway redeployará automáticamentes://tu-proyecto.vercel.app`
    - `SANCTUM_STATEFUL_DOMAINS=tu-proyecto.vercel.app`
 2. Redeploya el backend
 
@@ -276,7 +260,7 @@ Una vez desplegado, toma la URL de Vercel (ej: `https://tu-proyecto.vercel.app`)
 ## 🎯 URLs de Producción
 
 Anota tus URLs aquí:
-
+ailway):** https://___________________.up.railway.app
 - **Frontend (Vercel):** https://___________________.vercel.app
 - **Backend (Render):** https://___________________.onrender.com
 - **Base de datos (Aiven):** ___________________.aivencloud.com
@@ -285,22 +269,26 @@ Anota tus URLs aquí:
 ---
 
 ## 🚨 Troubleshooting
-
-### Error: "CORS blocked"
-→ Verificar `SANCTUM_STATEFUL_DOMAINS` y `FRONTEND_URL` en Render
+ailway
 
 ### Error: "Connection refused" a BD
 → Verificar credenciales de Aiven y que el servicio está RUNNING
 
 ### Error: "500 Internal Server Error"
-→ Ver logs en Render: Dashboard → Logs
+→ Ver logs en Railway: Click en el servicio → Deploy Logs
 
 ### Frontend no actualiza
 → En Vercel: Deployments → Redeploy
 
+### Railway: "Deployment failed during build"
+→ Ver Build Logs para el error específico
+→ Verificar que Root Directory esté configurado
+
 ---
 
 ## 📝 Notas Importantes
+
+- **Railway Free Tier:** $5 de crédito mensual (suficiente para desarrollo). El backend permanece activo.
 
 - **Render Free Tier:** El backend se dormirá después de 15 min de inactividad. Primera petición será lenta (~30s)
 - **Aiven Free Tier:** Ideal para desarrollo, límite de almacenamiento (5GB)
