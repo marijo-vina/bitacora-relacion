@@ -11,5 +11,11 @@ cmds = [
   'php artisan route:cache'
 ]
 
+[phases.deploy]
+cmds = [
+  'php artisan migrate --force',
+  'php artisan storage:link || true'
+]
+
 [start]
 cmd = 'php artisan serve --host=0.0.0.0 --port=$PORT'
