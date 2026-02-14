@@ -20,7 +20,8 @@ class AuthController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        // No regeneramos sesión porque usaremos tokens
+        // $request->session()->regenerate();
 
         /** @var User $user */
         $user = Auth::user();
@@ -32,14 +33,19 @@ class AuthController extends Controller
         ];
         
         if (!in_array($user->email, $allowedEmails)) {
-            Auth::logout();
+            // Revocar tokens si existieran y salir
+            $user->tokens()->delete();
             return response()->json([
                 'message' => 'No tienes acceso a esta plataforma privada.'
             ], 403);
         }
 
+        // Crear Token (valido por 30 días, por ejemplo)
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'user' => new UserResource($user),
+            'token' => $token, // Devolvemos el token
         ]);
     }
 
@@ -48,10 +54,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Revocar el token actual
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
 
         return response()->json([
             'message' => 'Sesión cerrada correctamente.'

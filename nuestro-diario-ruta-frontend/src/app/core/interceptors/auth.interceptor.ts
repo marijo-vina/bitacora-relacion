@@ -10,14 +10,23 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Con el proxy, withCredentials ya se maneja en app.config
-    // Solo manejamos errores aquí
+    const token = this.authService.getToken();
+
+    if (token) {
+      request = request.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    }
+
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          // Token expirado o invalido
           this.authService.clearAuth();
           this.router.navigate(['/login']);
         }
