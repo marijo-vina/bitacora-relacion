@@ -23,9 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         // API middleware configuration
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // $middleware->api(prepend: [
+        //     \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        // ]);
         
         // CORS middleware
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
