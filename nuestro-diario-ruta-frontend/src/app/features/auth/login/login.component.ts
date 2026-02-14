@@ -36,7 +36,7 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
           
           <!-- Formulario -->
-          <form (ngSubmit)="onSubmit()" class="space-y-5">
+          <form class="space-y-5">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Correo electrónico
@@ -71,7 +71,8 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
             
             <button 
-              type="submit"
+              type="button"
+              (click)="onSubmit()"
               [disabled]="isLoading"
               class="btn-primary w-full flex items-center justify-center gap-2"
             >
