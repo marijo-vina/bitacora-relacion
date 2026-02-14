@@ -16,6 +16,27 @@ use Illuminate\Support\Facades\Route;
 // Public routes (login only)
 Route::post('/login', [AuthController::class, 'login']);
 
+// Debug route for database connection
+Route::get('/db-check', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+        $count = \Illuminate\Support\Facades\DB::table('users')->count();
+        return response()->json([
+            'status' => 'success',
+            'message' => "Successfully connected to database: $dbName",
+            'user_count' => $count
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     
