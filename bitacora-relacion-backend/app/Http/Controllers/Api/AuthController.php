@@ -18,35 +18,58 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
+        try {
+            $request->authenticate();
 
-        // No regeneramos sesión porque usaremos tokens
-        // $request->session()->regenerate();
+            // No regeneramos sesión porque usaremos tokens
+            // $request->session()->regenerate();
 
-        /** @var User $user */
-        $user = Auth::user();
-        
-        // Check if user is one of the allowed partners
-        $allowedEmails = [
-            config('app.partner1_email'),
-            config('app.partner2_email')
-        ];
-        
-        if (!in_array($user->email, $allowedEmails)) {
-            // Revocar tokens si existieran y salir
-            $user->tokens()->delete();
+            /** @var User $user */
+            $user = Auth::user();
+            
+            // Log user email for debugging
+            Log::info('Authenticated user: ' . $user->email);
+
+            // Check if user is one of the allowed partners
+            $partner1 = config('app.partner1_email');
+            $partner2 = config('app.partner2_email');
+
+            // Debug config values
+            if (empty($partner1) || empty($partner2)) {
+                Log::warning('Partner emails not configured correctly in environment');
+            }
+            
+            $allowedEmails = [
+                $partner1,
+                $partner2
+            ];
+            
+            if (!in_array($user->email, $allowedEmails)) {
+                // Revocar tokens si existieran y salir
+                $user->tokens()->delete();
+                return response()->json([
+                    'message' => 'No tienes acceso a esta plataforma privada.',
+                    'debug_email' => $user->email // Remove in production later
+                ], 403);
+            }
+
+            // Crear Token (valido por 30 días, por ejemplo)
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'message' => 'No tienes acceso a esta plataforma privada.'
-            ], 403);
+                'user' => new UserResource($user),
+                'token' => $token, // Devolvemos el token
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Login Error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Server Error during login',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-
-        // Crear Token (valido por 30 días, por ejemplo)
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token, // Devolvemos el token
-        ]);
     }
 
     /**
