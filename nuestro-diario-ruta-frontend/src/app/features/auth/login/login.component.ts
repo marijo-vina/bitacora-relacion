@@ -106,7 +106,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   onSubmit(): void {
     if (!this.credentials.email || !this.credentials.password) {
@@ -122,8 +122,13 @@ export class LoginComponent {
         this.router.navigate(['/timeline']);
       },
       error: (error) => {
+        console.error('Login error details:', error); // DEBUG: Ver error completo
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Error al iniciar sesión';
+        if (error.status === 0) {
+          this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión o intenta más tarde.';
+        } else {
+          this.errorMessage = error.error?.message || `Error (${error.status}): ${error.statusText || 'Desconocido'}`;
+        }
       }
     });
   }

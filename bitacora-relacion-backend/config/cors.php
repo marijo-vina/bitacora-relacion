@@ -19,11 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        env('FRONTEND_URL', 'http://localhost:4200'),
-        'http://localhost:5173',
-        'http://localhost:3000',
-    ],
+    'allowed_origins' => ['*'], // TEMPORAL: Permitir todo para debug
 
     'allowed_origins_patterns' => [],
 
