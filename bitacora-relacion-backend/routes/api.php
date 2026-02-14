@@ -37,6 +37,30 @@ Route::get('/db-check', function () {
     }
 });
 
+// Manual Seeder Route (Emergency Fix)
+Route::get('/seed-db', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+        
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $seedOutput = \Illuminate\Support\Facades\Artisan::output();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Migrations and Seeds executed successfully',
+            'migrate_output' => $migrateOutput,
+            'seed_output' => $seedOutput
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     
