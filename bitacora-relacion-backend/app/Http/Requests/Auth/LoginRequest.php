@@ -56,7 +56,9 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         // Intentar login con las credenciales
+        Log::info('Login attempt for: ' . $this->input('email'));
         if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            Log::warning('Login failed for: ' . $this->input('email'));
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
