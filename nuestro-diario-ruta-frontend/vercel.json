@@ -1,16 +1,8 @@
 {
-  "version": 2,
-  "public": true,
-  "builds": [
+  "rewrites": [
     {
-      "src": "dist/nuestro-diario-ruta/browser/index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
