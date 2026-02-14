@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'], // TEMPORAL: Permitir todo para debug
+    'allowed_origins' => [
+        'http://localhost:4200',
+        'https://nuestro-diario.vercel.app',
+        'https://bitacora-relacion-backend-production.up.railway.app'
+    ],
 
     'allowed_origins_patterns' => [],
 
