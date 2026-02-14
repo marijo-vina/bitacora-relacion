@@ -28,7 +28,7 @@ import { AuthService } from '../../../core/services/auth.service';
               </svg>
             </div>
             <h1 class="text-3xl font-romantic font-bold text-gradient mb-2">
-              Nuestro Diario de Ruta <span class="text-sm font-normal text-gray-400">v1.2</span>
+              Nuestro Diario de Ruta <span class="text-sm font-normal text-gray-400">v1.3</span>
             </h1>
             <p class="text-gray-500 text-sm">
               Un espacio privado para nuestros recuerdos
