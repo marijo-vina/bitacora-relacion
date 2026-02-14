@@ -17,59 +17,86 @@ Route::get('/', function () {
     ]);
 });
 
-// Ruta temporal para mantenimiento en producción (sin consola SSH)
+// Ruta de Diagnóstico y Reparación (A prueba de fallos)
 Route::get('/fix-prod', function () {
-    try {
-        $output = [];
-        
-        // 1. Limpiar caches
-        \Artisan::call('config:clear');
-        $output[] = 'Config cleared: ' . \Artisan::output();
-        
-        \Artisan::call('route:clear');
-        $output[] = 'Route cleared: ' . \Artisan::output();
-        
-        \Artisan::call('view:clear');
-        $output[] = 'View cleared: ' . \Artisan::output();
-        
-        // 2. Cachear configuración
-        \Artisan::call('config:cache');
-        $output[] = 'Config cached: ' . \Artisan::output();
-        
-        \Artisan::call('route:cache');
-        $output[] = 'Route cached: ' . \Artisan::output();
-        
-        // 3. Storage Link
-        try {
-            \Artisan::call('storage:link');
-            $output[] = 'Storage linked: ' . \Artisan::output();
-        } catch (\Exception $e) {
-            $output[] = 'Storage link skipped: ' . $e->getMessage();
+    // 0. Forzar visualización de errores PHP
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+
+    $results = [
+        'timestamp' => now()->toDateTimeString(),
+        'status' => 'running_diagnostics',
+        'environment' => app()->environment(),
+        'php_version' => phpversion(),
+    ];
+
+    // 1. Verificar Permisos de Carpetas Críticas
+    $pathsToCheck = [
+        storage_path(),
+        storage_path('logs'),
+        storage_path('framework'),
+        storage_path('framework/views'),
+        storage_path('framework/cache'),
+        base_path('bootstrap/cache'),
+    ];
+
+    $results['permissions'] = [];
+    foreach ($pathsToCheck as $path) {
+        // Crear si no existe
+        if (!file_exists($path)) {
+            @mkdir($path, 0775, true);
         }
         
-        // 4. Intentar arreglar permisos (si el sistema lo permite)
-        if (function_exists('exec')) {
-            try {
-                exec('chmod -R 775 ../storage ../bootstrap/cache', $execOutput, $returnVar);
-                $output[] = 'Permissions chmod result (' . $returnVar . '): ' . implode("\n", $execOutput);
-            } catch (\Exception $e) {
-                $output[] = 'Permissions error: ' . $e->getMessage();
-            }
+        $isWritable = is_writable($path);
+        $status = $isWritable ? 'OK' : 'FAIL (Not Writable)';
+        
+        // Intentar arreglar (chmod)
+        if (!$isWritable) {
+            @chmod($path, 0775);
+            $isWritableAfter = is_writable($path);
+            $status .= ' -> Fix Attempt: ' . ($isWritableAfter ? 'SUCCESS' : 'FAILED');
         }
-
-        // 5. Migraciones
-        \Artisan::call('migrate', ['--force' => true]);
-        $output[] = 'Migrations: ' . \Artisan::output();
-
-        return response()->json([
-            'status' => 'success',
-            'output' => $output
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
+        
+        $results['permissions'][basename($path)] = $status;
     }
+
+    // 2. Probar Conexión a Base de Datos
+    try {
+        \DB::connection()->getPdo();
+        $results['database'] = 'SUCCESS: Connected to ' . \DB::connection()->getDatabaseName();
+    } catch (\Throwable $e) {
+        $results['database'] = 'ERROR: ' . $e->getMessage();
+    }
+
+    // 3. Ejecutar Comandos Artisan (Uno por uno)
+    $commands = [
+        'optimize:clear', // Limpia config, views, routes, etc.
+        'storage:link',
+        'migrate --force',
+        'config:cache',   // Regenerar cache al final
+        'route:cache',
+    ];
+
+    $results['commands'] = [];
+    foreach ($commands as $cmdString) {
+        try {
+            $parts = explode(' ', $cmdString);
+            $command = array_shift($parts);
+            $params = [];
+            foreach ($parts as $part) {
+                if (str_starts_with($part, '--')) {
+                    $key = substr($part, 2);
+                    $params['--'.$key] = true;
+                }
+            }
+            
+            \Artisan::call($command, $params);
+            $results['commands'][$cmdString] = 'OK: ' . trim(str_replace("\n", " ", \Artisan::output()));
+        } catch (\Throwable $e) {
+            $results['commands'][$cmdString] = 'ERROR: ' . $e->getMessage();
+        }
+    }
+
+    return response()->json($results, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 });
