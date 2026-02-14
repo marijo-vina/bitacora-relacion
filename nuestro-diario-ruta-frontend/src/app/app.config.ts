@@ -17,13 +17,14 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([
         // Interceptor de Loading
         (req, next) => {
+          // Inyección de dependencia en contexto funcional
           const loadingService = inject(LoadingService);
-          
+
           if (activeRequests === 0) {
             loadingService.show();
           }
           activeRequests++;
-          
+
           return next(req).pipe(
             finalize(() => {
               activeRequests--;
@@ -33,43 +34,36 @@ export const appConfig: ApplicationConfig = {
             })
           );
         },
-        // Interceptor de Autenticación y CSRF
+
+        // Interceptor de Autenticación (Bearer Token)
         (req, next) => {
-          // Para peticiones a la API, agregar withCredentials y el token XSRF manualmente
-          if (req.url.startsWith('/api') || req.url.startsWith('/sanctum')) {
-            // Leer la cookie XSRF-TOKEN
-            const token = document.cookie
-              .split('; ')
-              .find(row => row.startsWith('XSRF-TOKEN='))
-              ?.split('=')[1];
-            
-            let clonedReq = req.clone({
-              withCredentials: true
+          const authService = inject(AuthService);
+          const router = inject(Router);
+          const token = authService.getToken();
+
+          // Clonar request y agregar header si existe token
+          let authReq = req;
+          if (token) {
+            authReq = req.clone({
+              setHeaders: {
+                Authorization: `Bearer ${token}`
+              }
             });
-            
-            // Agregar header X-XSRF-TOKEN si existe la cookie y no es la petición de csrf-cookie
-            if (token && !req.url.includes('/sanctum/csrf-cookie')) {
-              clonedReq = clonedReq.clone({
-                setHeaders: {
-                  'X-XSRF-TOKEN': decodeURIComponent(token)
-                }
-              });
-            }
-            
-            return next(clonedReq).pipe(
-              catchError((error: HttpErrorResponse) => {
-                // Manejar errores 401 Unauthorized
-                if (error.status === 401) {
-                  const authService = inject(AuthService);
-                  const router = inject(Router);
+          }
+
+          return next(authReq).pipe(
+            catchError((error: HttpErrorResponse) => {
+              // Manejar errores 401 Unauthorized
+              if (error.status === 401) {
+                // Evitar loop infinito si falla el logout
+                if (!req.url.includes('/login') && !req.url.includes('/logout')) {
                   authService.clearAuth();
                   router.navigate(['/login']);
                 }
-                return throwError(() => error);
-              })
-            );
-          }
-          return next(req);
+              }
+              return throwError(() => error);
+            })
+          );
         }
       ])
     )
