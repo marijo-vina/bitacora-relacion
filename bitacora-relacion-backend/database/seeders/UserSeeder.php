@@ -16,14 +16,14 @@ class UserSeeder extends Seeder
         // User 1 (Marijose)
         User::create([
             'name' => 'Marijose',
-            'email' => config('app.partner1_email', 'tu@email.com'),
+            'email' => config('app.partner1_email', 'mvinajera@gmail.com'),
             'password' => Hash::make('password123'),
         ]);
 
         // User 2 (David)
         User::create([
             'name' => 'David',
-            'email' => config('app.partner2_email', 'el@email.com'),
+            'email' => config('app.partner2_email', '514dave.core@gmail.com'),
             'password' => Hash::make('password123'),
         ]);
     }
