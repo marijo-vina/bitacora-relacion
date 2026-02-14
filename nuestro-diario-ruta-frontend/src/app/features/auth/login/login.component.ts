@@ -109,6 +109,9 @@ export class LoginComponent {
   ) { }
 
   onSubmit(): void {
+    console.log('LoginComponent: onSubmit disparado'); // DEBUG
+    console.log('Datos del formulario:', this.credentials); // DEBUG
+
     if (!this.credentials.email || !this.credentials.password) {
       this.errorMessage = 'Por favor completa todos los campos';
       return;

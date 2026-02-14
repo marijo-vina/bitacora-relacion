@@ -63,7 +63,12 @@ export class AuthService {
   }
 
   public getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    try {
+      return localStorage.getItem(this.tokenKey);
+    } catch (e) {
+      console.error('Error accediendo a localStorage (getToken):', e);
+      return null;
+    }
   }
 
   public getUser(): User | null {
@@ -71,8 +76,13 @@ export class AuthService {
   }
 
   private getUserFromStorage(): User | null {
-    const userData = localStorage.getItem(this.userKey);
-    return userData ? JSON.parse(userData) : null;
+    try {
+      const userData = localStorage.getItem(this.userKey);
+      return userData ? JSON.parse(userData) : null;
+    } catch (e) {
+      console.error('Error accediendo a localStorage (getUserFromStorage):', e);
+      return null;
+    }
   }
 
   clearAuth(): void {
